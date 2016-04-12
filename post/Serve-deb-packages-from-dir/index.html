@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title> Serve debian packages from a directory &middot; Akshay&#39;s </title>
+
+
+<link rel="stylesheet" href="https://amoghe.github.io//css/slim.css">
+<link rel="stylesheet" href="https://amoghe.github.io//css/highlight.min.css">
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Source+Code+Pro' rel='stylesheet' type='text/css'>
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="/favicon.ico">
+
+
+<link href="" rel="alternate" type="application/rss+xml" title="Akshay&#39;s" />
+
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+  <h1 class="site-title"><a href="https://amoghe.github.io/">Akshay&#39;s</a></h1>
+  <p class="site-tagline">... stuff?</p>
+  <div class="nav">
+    <a class="nav-btn" href="#">
+      <span class="ci ci-burger"></span>
+    </a>
+    <ul class="nav-list">
+       
+	  <li class="spacer">&ac;</li>
+
+      <li><a href="https://github.com/amoghe">Github</a></li> 
+      <li><a href="https://twitter.com/astrodonut">Twitter</a></li> 
+    </ul>
+  </div>
+</div>
+    <div class="content">
+      <div class="posts">
+        <div class="post">
+          <h2 class="post-title"><a href="https://amoghe.github.io/post/Serve-deb-packages-from-dir/">Serve debian packages from a directory</a></h2>
+          <span class="post-date">Apr 12, 2016 </span>
+          <div class="post-content">
+            <p>So you have some debian packages in a directory and you&rsquo;d like to consume them as you would from an apt repo server?</p>
+
+<p>Well, its quite simple because apt uses plain &lsquo;ole HTTP for everything it does. So we can serve the packages (and some
+&ldquo;special&rdquo; files) over HTTP and pretend to be an apt server!</p>
+
+<p>First, you&rsquo;ll need to install <code>dpkg-dev</code>. This package provides the tool to take a directory full of packages and
+create a &lsquo;Packages&rsquo; file. Think of a Packages file as an &lsquo;index&rsquo; for the repo.</p>
+
+<p>On my Ubuntu 14.04 system, I run</p>
+
+<pre><code class="language-bash">sudo apt-get install dpkg-dev
+</code></pre>
+
+<p>Next, I <code>cd</code> into the directory containing the packages, and run</p>
+
+<pre><code class="language-bash">dpkg-scanpkgs &gt; Packages
+</code></pre>
+
+<p>This creates the &lsquo;index&rsquo; for the packages in the dir. If you have a lot of packages in the dir, you might be better
+off creating a compressed version of the file so that clients transfer fewer bytes on the wire.</p>
+
+<pre><code class="language-bash">dpkg-scanpkgs | gzip -9 &gt; Packages.gz
+</code></pre>
+
+<p>Of course, this assumes you have the <code>gzip</code> utility available on your system.</p>
+
+<p><strong>NOTE</strong>: you only need to run one of the above commands.</p>
+
+<p>Okay, so we have a <code>Packages</code> (or <code>Packages.gz</code>) file in the directory. Thats great, because <code>apt-get</code> expects to be
+able to fetch that file in order to determine what packages the repo server can provide.</p>
+
+<p>In order to actually pretend to be an apt server, this directory needs to be &ldquo;served&rdquo; by an HTTP server. For this, we
+stand up a simple HTTP server (I&rsquo;m using python, but you could use any of these <a href="https://gist.github.com/willurd/5720255">methods</a>).</p>
+
+<pre><code class="language-bash">python -m SimpleHTTPServer 8000
+</code></pre>
+
+<p>Great, so now we have an HTTP server running on port 8000.</p>
+
+<p>Now head over to the &ldquo;client&rdquo; side where we&rsquo;ll twiddle apt settings so that it connects to the HTTP server we started.</p>
+
+<p>In <code>/etc/apt/sources.list</code>, add</p>
+
+<pre><code class="language-bash">deb http://localhost:8000/ /
+</code></pre>
+
+<p>I&rsquo;m using <code>localhost</code> in this example, but I often use this to serve packages inside docker containers, in which case
+I point to the appropriate docker IP of the container serving the repo.</p>
+
+<p>Now run</p>
+
+<pre><code class="language-bash">apt-get update
+</code></pre>
+
+<p>You&rsquo;ll see some messages indicating that certain files were not found (such as <code>Releases</code> and <code>Release.gpg</code>). Thats
+okay since those aren&rsquo;t mandatory files. Whats important is that it finds the <code>Packages</code> (or its <code>.gz</code> variant).</p>
+
+<p>Now try and install a package served by the server&hellip;</p>
+
+<pre><code class="language-bash">apt-get install &lt;something&gt;
+</code></pre>
+
+<p>Et Voila!</p>
+
+          </div>
+        </div>
+        <div class="pagination"> 
+          <a class="btn next " href="https://amoghe.github.io/post/Lenovo-T440s-backlight/"> Next</a> 
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+  <p>Powered by <a href="http://gohugo.io">Hugo</a>. This theme—Slim—is open sourced on <a href="https://github.com/zhe/hugo-theme-slim">Github</a>.</p>
+</div>
+
+  </div>
+  <script src="https://amoghe.github.io//js/slim.js"></script>
+  <script src="https://amoghe.github.io//js/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+  </script>
+  
+</body>
+
+</html>

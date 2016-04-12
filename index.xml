@@ -5,8 +5,80 @@
     <link>https://amoghe.github.io/</link>
     <description>Recent content on Akshay&#39;s</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Sat, 11 Apr 2015 22:59:57 -0700</lastBuildDate>
+    <lastBuildDate>Tue, 12 Apr 2016 00:13:27 -0700</lastBuildDate>
     <atom:link href="https://amoghe.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Serve debian packages from a directory</title>
+      <link>https://amoghe.github.io/post/Serve-deb-packages-from-dir/</link>
+      <pubDate>Tue, 12 Apr 2016 00:13:27 -0700</pubDate>
+      
+      <guid>https://amoghe.github.io/post/Serve-deb-packages-from-dir/</guid>
+      <description>&lt;p&gt;So you have some debian packages in a directory and you&amp;rsquo;d like to consume them as you would from an apt repo server?&lt;/p&gt;
+
+&lt;p&gt;Well, its quite simple because apt uses plain &amp;lsquo;ole HTTP for everything it does. So we can serve the packages (and some
+&amp;ldquo;special&amp;rdquo; files) over HTTP and pretend to be an apt server!&lt;/p&gt;
+
+&lt;p&gt;First, you&amp;rsquo;ll need to install &lt;code&gt;dpkg-dev&lt;/code&gt;. This package provides the tool to take a directory full of packages and
+create a &amp;lsquo;Packages&amp;rsquo; file. Think of a Packages file as an &amp;lsquo;index&amp;rsquo; for the repo.&lt;/p&gt;
+
+&lt;p&gt;On my Ubuntu 14.04 system, I run&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;sudo apt-get install dpkg-dev
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Next, I &lt;code&gt;cd&lt;/code&gt; into the directory containing the packages, and run&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;dpkg-scanpkgs &amp;gt; Packages
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This creates the &amp;lsquo;index&amp;rsquo; for the packages in the dir. If you have a lot of packages in the dir, you might be better
+off creating a compressed version of the file so that clients transfer fewer bytes on the wire.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;dpkg-scanpkgs | gzip -9 &amp;gt; Packages.gz
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Of course, this assumes you have the &lt;code&gt;gzip&lt;/code&gt; utility available on your system.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: you only need to run one of the above commands.&lt;/p&gt;
+
+&lt;p&gt;Okay, so we have a &lt;code&gt;Packages&lt;/code&gt; (or &lt;code&gt;Packages.gz&lt;/code&gt;) file in the directory. Thats great, because &lt;code&gt;apt-get&lt;/code&gt; expects to be
+able to fetch that file in order to determine what packages the repo server can provide.&lt;/p&gt;
+
+&lt;p&gt;In order to actually pretend to be an apt server, this directory needs to be &amp;ldquo;served&amp;rdquo; by an HTTP server. For this, we
+stand up a simple HTTP server (I&amp;rsquo;m using python, but you could use any of these &lt;a href=&#34;https://gist.github.com/willurd/5720255&#34;&gt;methods&lt;/a&gt;).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;python -m SimpleHTTPServer 8000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Great, so now we have an HTTP server running on port 8000.&lt;/p&gt;
+
+&lt;p&gt;Now head over to the &amp;ldquo;client&amp;rdquo; side where we&amp;rsquo;ll twiddle apt settings so that it connects to the HTTP server we started.&lt;/p&gt;
+
+&lt;p&gt;In &lt;code&gt;/etc/apt/sources.list&lt;/code&gt;, add&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;deb http://localhost:8000/ /
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I&amp;rsquo;m using &lt;code&gt;localhost&lt;/code&gt; in this example, but I often use this to serve packages inside docker containers, in which case
+I point to the appropriate docker IP of the container serving the repo.&lt;/p&gt;
+
+&lt;p&gt;Now run&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;apt-get update
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You&amp;rsquo;ll see some messages indicating that certain files were not found (such as &lt;code&gt;Releases&lt;/code&gt; and &lt;code&gt;Release.gpg&lt;/code&gt;). Thats
+okay since those aren&amp;rsquo;t mandatory files. Whats important is that it finds the &lt;code&gt;Packages&lt;/code&gt; (or its &lt;code&gt;.gz&lt;/code&gt; variant).&lt;/p&gt;
+
+&lt;p&gt;Now try and install a package served by the server&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;apt-get install &amp;lt;something&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Et Voila!&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Fix screen brightness control keys on a (2014) Lenovo T440s</title>
