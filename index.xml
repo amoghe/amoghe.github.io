@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Akshay&#39;s</title>
+    <link>https://amoghe.github.io/</link>
+    <description>Recent content on Akshay&#39;s</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sat, 11 Apr 2015 22:59:57 -0700</lastBuildDate>
+    <atom:link href="https://amoghe.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Fix screen brightness control keys on a (2014) Lenovo T440s</title>
+      <link>https://amoghe.github.io/post/Lenovo-T440s-backlight/</link>
+      <pubDate>Sat, 11 Apr 2015 22:59:57 -0700</pubDate>
+      
+      <guid>https://amoghe.github.io/post/Lenovo-T440s-backlight/</guid>
+      <description>&lt;p&gt;The hardware keys for brightness control on my Lenovo T440s (2014) worked at a very coarse granularity. Hitting
+the brightness keys would cause it to switch between 4 levels of brightness. I found a solution &lt;a href=&#34;http://blog.karssen.org/2014/05/10/fixing-backlight-control-with-ubuntu-on-my-thinkpad-t440s/&#34;&gt;here&lt;/a&gt; which
+worked for me.&lt;/p&gt;
+
+&lt;p&gt;Simply add this to the GRUB_CMDLINE_LINUX_DEFAULT line in &lt;code&gt;/etc/default/grub&lt;/code&gt; :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;GRUB_CMDLINE_LINUX_DEFAULT=&amp;quot;acpi_backlight=vendor quiet splash&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and run&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;sudo update-grub
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Reboot and you will be able to change the backlight brightness in finer steps.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Update&lt;/strong&gt;: On a recent installation of 14.04.3 on a 2015 T440s, I didn&amp;rsquo;t have to do anything to get this to
+work. Seems like it was fixed upstream.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
